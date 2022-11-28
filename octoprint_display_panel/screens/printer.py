@@ -76,13 +76,12 @@ def float_count_formatter(number, max_chars):
 class PrinterInfoScreen(base.MicroPanelScreenBase):
     """Base Information about the printer (temperatures)
     """
-    def __init__(self, width, height, _printer):
-        super().__init__(width, height)
+    def __init__(self, width, height, _printer, **kwargs):
+        super().__init__(width, height, **kwargs)
         self._printer = _printer
+        self._display_style = kwargs["display_style"]
         
     def draw(self):
-        c = self.get_canvas()
-        c.text((0, 0), "Printer Temperatures")
         head_text = "no printer"
         bed_text = "no printer"
         
@@ -99,8 +98,16 @@ class PrinterInfoScreen(base.MicroPanelScreenBase):
                 bed_text = f"{bed['actual']} / {bed['target']}\xb0C"
             else:
                 bed_text = "no bed"
-        c.text((0, 9), f'Head: {head_text}')
-        c.text((0, 18), f' Bed: {bed_text}')
+        c = self.get_canvas()
+
+        if self._display_style == "large":
+            c.text((0, 0), "Printer Temperatures")
+            c.text((0, 9), f'xHead: {head_text}')
+            c.text((0, 18), f' xBed: {bed_text}')
+        else:
+            c.text((0, 0), "Printer Temperatures")
+            c.text((0, 9), f'Head: {head_text}')
+            c.text((0, 18), f' Bed: {bed_text}')
 
         return c.image
 
@@ -117,8 +124,8 @@ class PrinterInfoScreen(base.MicroPanelScreenBase):
 class PrintStatusScreen(base.MicroPanelScreenBase):
     """Status information about the printer and any active print job.
     """
-    def __init__(self, width, height, _printer):
-        super().__init__(width, height)
+    def __init__(self, width, height, _printer, **kwargs):
+        super().__init__(width, height, **kwargs)
         self._printer = _printer
         self.display_layer_progress = {
             'current_layer': -1, 'total_layer': -1,
@@ -219,6 +226,7 @@ class PrinterStatusBarScreen(base.MicroPanelScreenBase):
         
     def draw(self):
         c = self.get_canvas()
+
         display_string = ""
         if self._printer.is_disconnected():
             display_string = "Printer Not Connected"

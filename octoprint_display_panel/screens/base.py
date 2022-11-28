@@ -68,10 +68,7 @@ method. Subscreens will stay active until they return the value
 """
 
 from PIL import Image, ImageDraw, ImageFont
-
-
-DEFAULT_FONT = ImageFont.load_default()
-DEFAULT_FONT_LINE_HEIGHT = 9
+from ttf_opensans import opensans
 
 
 class MicroPanelCanvas:
@@ -83,10 +80,15 @@ class MicroPanelCanvas:
     data can be retrieved by the `image` instance variable.
 
     """
-    def __init__(self, width, height):
+    def __init__(self, width, height, **kwargs):
         self.width, self.height = width, height
         self.image = Image.new("1", (self.width, self.height))
         self.draw = ImageDraw.Draw(self.image)
+
+        self.font_weight = kwargs.get('font_weight', 100)
+        self.font_size = kwargs.get('font_weight', 12)
+
+        self.font = ImageFont.truetype(font=str(opensans(font_weight=self.font_weight).path), size=self.font_size)
 
     def fill(self, color):
         """Fill the entire canvas with the specified color.
@@ -104,9 +106,11 @@ class MicroPanelCanvas:
         `draw.text()` can be overridden with kwargs.
 
         """
-        kwargs.setdefault('font', DEFAULT_FONT)
+        kwargs.setdefault('font', self.font)
         kwargs.setdefault('fill', 255)
-        self.draw.text(point, message, **kwargs)
+
+        # Move starting coordinates a bit to the top-left to use the entire screen
+        self.draw.text( (point[0]-1, point[1]-4), message, **kwargs)
 
     def text_right(self, y, message, **kwargs):
         """Draw text, right aligned, at the given position on the canvas.
@@ -117,12 +121,12 @@ class MicroPanelCanvas:
         line will be individually right aligned.
 
         """
-        kwargs.setdefault('font', DEFAULT_FONT)
+        kwargs.setdefault('font', self.font)
         text_size = self.textsize(message, font=kwargs['font'])
         if '\n' in message:
             lines = message.rstrip('\n').split('\n')
-            if kwargs['font'] == DEFAULT_FONT:
-                line_height = DEFAULT_FONT_LINE_HEIGHT
+            if kwargs['font'] == self.font:
+                line_height = self.font_size
             elif 'line_height' in kwargs:
                 line_height = kwargs['line_height']
             else:
@@ -142,12 +146,12 @@ class MicroPanelCanvas:
         individually centered.
 
         """
-        kwargs.setdefault('font', DEFAULT_FONT)
+        kwargs.setdefault('font', self.font)
         text_size = self.textsize(message, font=kwargs['font'])
         if '\n' in message:
             lines = message.rstrip('\n').split('\n')
-            if kwargs['font'] == DEFAULT_FONT:
-                line_height = DEFAULT_FONT_LINE_HEIGHT
+            if kwargs['font'] == self.font:
+                line_height = self.font_size
             elif 'line_height' in kwargs:
                 line_height = kwargs['line_height']
             else:
@@ -165,7 +169,7 @@ class MicroPanelCanvas:
 
 
 class MicroPanelScreenBase:
-    def __init__(self, width, height):
+    def __init__(self, width, height, **kwargs):
         """Initialize the base screen.
         
         Subclasses which override __init__() should call this function
@@ -175,6 +179,7 @@ class MicroPanelScreenBase:
         self.width = width
         self.height = height
         self.subscreen = None
+        self._settings = kwargs.get('_settings')
 
     def draw(self):
         """Create an image representing the current state of this screen.

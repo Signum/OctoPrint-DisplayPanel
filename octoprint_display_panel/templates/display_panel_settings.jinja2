@@ -205,6 +205,16 @@
 					</div>
 				</div>
 				<div class="control-group">
+					<label class="control-label">{{ _('Display style:') }}</label>
+					<div class="controls" data-toggle="tooltip" title="{{ _('Choose the graphical style to be used on the display.') }}">
+						<select data-bind="value: settings.plugins.display_panel.display_style">
+							<option value="default">Default (small font)</option>
+							<option value="large">Large (large font, fewer details)</option>
+						</select>
+						<div class="help-block">{{ _('Choose the style of display you prefer.') }}</div>
+					</div>
+				</div>
+				<div class="control-group">
 					<label class="control-label">{{ _('Virtual Panel:') }}</label>
 					<div class="controls" data-toggle="tooltip" title="{{ _('Add a Micro Panel tab to the OctoPrint WebUI which mirrors the physical display. Changing this setting requires restarting OctoPrint.') }}">
 						<input class="input-checkbox" type="checkbox" data-bind="checked: settings.plugins.display_panel.virtual_panel">

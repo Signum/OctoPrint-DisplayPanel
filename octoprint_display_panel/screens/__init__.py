@@ -59,11 +59,12 @@ class MicroPanelScreenTop(base.MicroPanelScreenBase):
         # listed below.
         self.subscreen_height = height - self.status_bar_height
         self.screens = {
-            'system': system.SystemInfoScreen(width, self.subscreen_height),
+            'system': system.SystemInfoScreen(width, self.subscreen_height,
+                display_style = self._settings.get(["display_style"])),
             'printer': printer.PrinterInfoScreen(width, self.subscreen_height,
-                                                 self._printer),
+                self._printer, display_style = self._settings.get(["display_style"])),
             'print': printer.PrintStatusScreen(width, self.subscreen_height,
-                                               self._printer),
+                self._printer, display_style = self._settings.get(["display_style"])),
         }
         self.current_screen = 'system'
         self.set_subscreen(self.current_screen)
