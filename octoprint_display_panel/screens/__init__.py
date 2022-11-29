@@ -12,7 +12,7 @@ implementing screens, see base.py.
 """
 from octoprint.events import Events
 
-from . import base, system, printer
+from . import base, printer, system
 
 
 class MessageScreen(base.MicroPanelScreenBase):

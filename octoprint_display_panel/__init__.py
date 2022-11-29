@@ -1,26 +1,23 @@
 # coding=utf-8
 from __future__ import absolute_import
 
-# system stats
-import psutil
+import inspect
+import json
 import shutil
 import socket
-
-import json
-
-import octoprint.plugin
-from octoprint.events import eventManager, Events
-from octoprint.util import RepeatedTimer, ResettableTimer
 import time
 from enum import Enum
+
+import octoprint.plugin
+
+# system stats
+import psutil
+from octoprint.events import Events, eventManager
+from octoprint.util import RepeatedTimer, ResettableTimer
 from PIL import Image, ImageDraw, ImageFont
-import inspect
 
-from . import panels
+from . import panels, screens
 from .panels.virtual_panel import VirtualPanelMixin
-
-
-from . import screens
 
 
 class ScreenModes(Enum):
@@ -212,7 +209,6 @@ class Display_panelPlugin(octoprint.plugin.StartupPlugin,
 				
 			self._display_init = True
 
-			self.font = ImageFont.load_default()
 			self.width = self.disp.width
 			self.height = self.disp.height
 			self.image = Image.new("1", (self.width, self.height))
