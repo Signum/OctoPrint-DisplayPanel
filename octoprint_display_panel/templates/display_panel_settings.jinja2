@@ -206,12 +206,12 @@
 				</div>
 				<div class="control-group">
 					<label class="control-label">{{ _('Display style:') }}</label>
-					<div class="controls" data-toggle="tooltip" title="{{ _('Choose the graphical style to be used on the display.') }}">
+					<div class="controls" data-toggle="tooltip" title="{{ _('Choose the graphical style to be used on the display. Changing this setting requires restarting OctoPrint.') }}">
 						<select data-bind="value: settings.plugins.display_panel.display_style">
 							<option value="default">Default (small font)</option>
 							<option value="large">Large (large font, fewer details)</option>
 						</select>
-						<div class="help-block">{{ _('Choose the style of display you prefer.') }}</div>
+						<div class="help-block">{{ _('Choose the style of display you prefer.  Changing this setting requires restarting OctoPrint.') }}</div>
 					</div>
 				</div>
 				<div class="control-group">
