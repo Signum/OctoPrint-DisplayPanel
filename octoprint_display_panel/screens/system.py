@@ -1,9 +1,10 @@
 """System-centric Micro Panel screen.
 """
-import time
-import psutil
 import shutil
 import socket
+import time
+
+import psutil
 
 from . import base
 
@@ -27,12 +28,21 @@ class SystemInfoScreen(base.MicroPanelScreenBase):
         GB = MB * 1024
         
         c = self.get_canvas()
+
         c.text_centered(0, self.stats['ip'])
-        c.text((0, 9), f'L: {load[0]:.2f}, {load[1]:.2f}, {load[2]:.2f}')
-        c.text((0, 18), (f'M: {mem.used//MB}/{mem.total//MB} MB'
-                         f' {mem.percent}%'))
-        c.text((0, 27), (f'D: {disk.used//GB}/{disk.total//GB} GB'
-                         f' {disk_percent:.1f}%'))
+        text =  f"L: {load[0]:.2f}, {load[1]:.2f}, {load[2]:.2f}\n"
+
+        if GB > 1:
+            # Scale to GB
+            text += f"M: {mem.used//GB}/{mem.total//GB} GB"
+        else:
+            # Scale to MB
+            text += f"M: {mem.used//MB}/{mem.total//MB} MB"
+        text += f" {mem.percent}%\n"
+
+        text += f"D: {disk.used//GB}/{disk.total//GB} GB {disk_percent:.1f}%"
+        
+        c.text((0, 11), text)
         return c.image
                
     def get_stats(self):
