@@ -1,13 +1,14 @@
 """Printer-centric Micro Panel screens.
 """
-import time
+import logging
 import threading
+import time
+
 from octoprint.events import Events, eventManager
 from octoprint.util import monotonic_time
 
 from . import base
 
-import logging
 logger = logging.getLogger('octoprint.plugins.display_panel.screens.printer')
 
 
@@ -105,9 +106,9 @@ class PrinterInfoScreen(base.MicroPanelScreenBase):
             c.text((0, 9), f'xHead: {head_text}')
             c.text((0, 18), f' xBed: {bed_text}')
         else:
-            c.text((0, 0), "Printer Temperatures")
-            c.text((0, 9), f'Head: {head_text}')
-            c.text((0, 18), f' Bed: {bed_text}')
+            c.text((0, 0), "Printer Temperatures\n" +
+                f"Head: {head_text}\n" +
+                f' Bed: {bed_text}')
 
         return c.image
 
@@ -134,14 +135,14 @@ class PrintStatusScreen(base.MicroPanelScreenBase):
         
     def draw(self):
         c = self.get_canvas()
-        c.text((0, 0), f"State: {self._printer.get_state_string()}")
+        text = f"State: {self._printer.get_state_string()}\n"
 
         if self._printer.job['file']['name']:
-            c.text((0, 9), f"File: {self._printer.job['file']['name']}")
+            text += f"File: {self._printer.job['file']['name']}\n"
             
             print_time = get_time_from_seconds(
                 self._printer.progress['printTime'] or 0)
-            c.text((0, 18), f"Time: {print_time}")
+            text += f"Time: {print_time}\n"
 
             # logger.info(self._printer.job) - for debugging
             if self._printer.job['filament'] is not None:
@@ -152,7 +153,7 @@ class PrintStatusScreen(base.MicroPanelScreenBase):
                     (filament['length'] or 0) / 1000, 3)
                 filament_mass = float_count_formatter(
                     (filament['volume'] or 0), 3)
-                c.text((0, 27), f"Filament: {filament_length}m/{filament_mass}cm3")
+                text += f"Filament: {filament_length}m/{filament_mass}cm³\n"
 
             # Display height if information available from DisplayLayerProgress
             if self.display_layer_progress['total_height'] != -1.0:
@@ -172,10 +173,13 @@ class PrintStatusScreen(base.MicroPanelScreenBase):
             elif self.display_layer_progress['current_height'] != -1.0:
                 height_text = height
             if height_text:
-                c.text((0, 36), height_text)
+                text += height_text
             
         else:
-            c.text((0, 18), "Waiting for file...")
+            text = "Waiting for file..."
+
+        print(text)
+        c.text((0, 0), text)
 
         return c.image
             
@@ -247,7 +251,7 @@ class PrinterStatusBarScreen(base.MicroPanelScreenBase):
             display_string = display_string.replace("connection", "conn")
 
         if display_string:
-            c.text_centered(4, display_string)
+            c.text_centered(0, display_string)
             return c.image
         
         ###
