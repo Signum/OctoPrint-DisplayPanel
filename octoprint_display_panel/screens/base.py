@@ -50,7 +50,7 @@ implement the `handle_button()` method.
           c = self.get_canvas()
           c.text((0,0), "Last Button:")
           c.text((20,10), self.last_button)
-          return c.image
+              return c.image
 
       def handle_button(self, label):
           self.last_button = label
@@ -85,11 +85,6 @@ class MicroPanelCanvas:
         self.image = Image.new("1", (self.width, self.height))
         self.draw = ImageDraw.Draw(self.image)
 
-        self.font_weight = kwargs.get('font_weight', 100)
-        self.font_size = kwargs.get('font_weight', 12)
-
-        self.font = ImageFont.truetype(font=str(opensans(font_weight=self.font_weight).path), size=self.font_size)
-
     def fill(self, color):
         """Fill the entire canvas with the specified color.
         
@@ -106,11 +101,16 @@ class MicroPanelCanvas:
         `draw.text()` can be overridden with kwargs.
 
         """
-        kwargs.setdefault('font', self.font)
+
+        font = self._get_font(**kwargs)
         kwargs.setdefault('fill', 255)
 
-        # Move starting coordinates a bit to the top-left to use the entire screen
-        self.draw.text( (point[0]-1, point[1]-4), message, **kwargs)
+        # Move the text a bit to the left and up to utilize the
+        # entire screen.
+        # TODO: determine the difference between top and ascending for TTF
+        #point = [point[0]-1, point[1]-4]
+
+        self.draw.text(point, message, font=font, spacing=0, **kwargs)
 
     def text_right(self, y, message, **kwargs):
         """Draw text, right aligned, at the given position on the canvas.
@@ -121,22 +121,15 @@ class MicroPanelCanvas:
         line will be individually right aligned.
 
         """
-        kwargs.setdefault('font', self.font)
-        text_size = self.textsize(message, font=kwargs['font'])
-        if '\n' in message:
-            lines = message.rstrip('\n').split('\n')
-            if kwargs['font'] == self.font:
-                line_height = self.font_size
-            elif 'line_height' in kwargs:
-                line_height = kwargs['line_height']
-            else:
-                line_height = text_size[1] / len(lines)
-            for i, line in enumerate(message.rstrip('\n').split('\n')):
-                self.text_right(y + (i * line_height), line, **kwargs)
-        else:
-            x = self.width - text_size[0]
-            self.text((x, y), message, **kwargs)
-        
+        font = self._get_font(**kwargs)
+        text_bbox = self.multiline_textbbox(
+                [0, 0],
+                message,
+                font=font)
+
+        x = self.width - text_bbox[2]
+        self.text((x, y), message, **kwargs)
+
     def text_centered(self, y, message, **kwargs):
         """Draw text, centered, at the given position on the canvas.
 
@@ -146,26 +139,34 @@ class MicroPanelCanvas:
         individually centered.
 
         """
-        kwargs.setdefault('font', self.font)
-        text_size = self.textsize(message, font=kwargs['font'])
-        if '\n' in message:
-            lines = message.rstrip('\n').split('\n')
-            if kwargs['font'] == self.font:
-                line_height = self.font_size
-            elif 'line_height' in kwargs:
-                line_height = kwargs['line_height']
-            else:
-                line_height = text_size[1] / len(lines)
-            for i, line in enumerate(message.rstrip('\n').split('\n')):
-                self.text_centered(y + (i * line_height), line, **kwargs)
-        else:
-            x = (self.width / 2) - (text_size[0] / 2)
-            self.text((x, y), message, **kwargs)
-        
+        font = self._get_font(**kwargs)
+        text_bbox = self.multiline_textbbox(
+                [0, 0],
+                message,
+                font=font)
+
+        x = (self.width / 2) - (text_bbox[2] / 2)
+        self.text((x, y), message, **kwargs)
+
     def __getattr__(self, key):
         """Proxy any other attributes (methods) to the canvas draw instance.
         """
         return getattr(self.draw, key)
+
+    def _get_font(self, font='default', **kwargs):
+        # Load the better-than-nothing font
+        if font == 'default':
+            font = ImageFont.load_default()
+        # Load the OpenSans truetype font
+        else:
+            font_weight = kwargs.get('font_weight', 100)
+            font_size = kwargs.get('font_size', 12)
+
+            font = ImageFont.truetype(
+                font=str(opensans(font_weight=font_weight).path),
+                size=font_size)
+
+        return font
 
 
 class MicroPanelScreenBase:
